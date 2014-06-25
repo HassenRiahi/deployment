@@ -36,9 +36,11 @@ if [ -e $INSTALL_COUCH/.init ]; then COUCH_INIT_DONE=1; else COUCH_INIT_DONE=0; 
 activate_asyncstageout(){
     if [ ! -d "$INSTALL_AS" ]; then
         mkdir -p $INSTALL_AS
+        mkdir -p $INSTALL_AS/Monitor/work
     fi
     touch $INSTALL_AS/.using
     cp $ROOT_DIR/apps/asyncstageout/configuration/Example.py $CONFIG_AS/config-template.py
+    cp $ROOT_DIR/apps/asyncstageout/Monitor/monitor.conf $CONFIG_AS/monitor.conf
 }
 
 inited_asyncstageout(){
@@ -282,12 +284,15 @@ start_asyncstageout(){
     init_asyncstageout;
     echo "Starting AsyncStageOut..."
     wmcoreD --start --config=$CONFIG_AS/config.py
+    ./apps/asyncstageout/Monitor/ASO-Monitor.pl --config $CONFIG_AS/monitor.conf
 
 }
 
 stop_asyncstageout(){
     echo "Shutting down asyncstageot...";
     wmcoreD --shutdown --config=$CONFIG_AS/config.py;
+    echo "Stopping: Monitor"
+    kill -9 `cat $INSTALL_AS/Monitor/aso-monitor.pid`
 }
 
 status_of_asyncstageout(){
